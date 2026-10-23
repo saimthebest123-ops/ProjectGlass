@@ -33,14 +33,16 @@ struct ContentView: View {
                             selection = index
                         }
                     } label: {
-                        VStack(spacing: 5) {
+                        VStack(spacing: 4) {
                             Image(systemName: tab.1)
-                                .font(.system(size: 18, weight: selection == index ? .semibold : .regular))
+                                .font(.system(size: 17, weight: selection == index ? .semibold : .regular))
                                 .symbolEffect(.bounce, value: selection == index)
-                            Text(tab.0)
-                                .font(.system(size: 9, weight: selection == index ? .semibold : .medium))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.75)
+                            if selection == index {
+                                Text(tab.0)
+                                    .font(.system(size: 8, weight: .semibold))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.6)
+                            }
                         }
                         .foregroundStyle(selection == index ? Color.white : Color.white.opacity(0.62))
                         .frame(maxWidth: .infinity)
@@ -68,6 +70,13 @@ struct ContentView: View {
             .padding(.top, 7)
             .padding(.bottom, 4)
             .background(.clear)
+            .simultaneousGesture(DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    let width = UIScreen.main.bounds.width - 24
+                    let itemWidth = width / CGFloat(tabs.count)
+                    let next = min(max(Int(value.location.x / itemWidth), 0), tabs.count - 1)
+                    if next != selection { selection = next }
+                })
         }
         .tint(Color(red: 0.78, green: 0.72, blue: 1.0))
         .preferredColorScheme(.dark)
