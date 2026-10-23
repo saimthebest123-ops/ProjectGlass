@@ -421,7 +421,7 @@ struct GlassView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 24).fill(isBlack ? Color.black : Color.indigo.opacity(0.45).gradient)
+                        RoundedRectangle(cornerRadius: 24).fill(isBlack ? Color.black : Color.indigo.opacity(0.45))
                         VStack(spacing: 12) {
                             Image(systemName: "waveform").font(.system(size: 30, weight: .light))
                             Text("Liquid Glass").font(.title2.bold())
