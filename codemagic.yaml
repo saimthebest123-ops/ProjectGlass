@@ -52,7 +52,14 @@ workflows:
             exit 1
           fi
 
-          echo "App bundle:"
+          echo "Checking for accidental Git/build files in app bundle..."
+          if find "$APP" \( -name "*.sample" -o -name "*.pack" -o -name "*.idx" -o -name "*.rev" -o -name ".git" \) -print | grep -q .; then
+            echo "ERROR: Git metadata or sample files were copied into the app bundle."
+            find "$APP" \( -name "*.sample" -o -name "*.pack" -o -name "*.idx" -o -name "*.rev" -o -name ".git" \) -print
+            exit 1
+          fi
+
+          echo "App bundle size:"
           du -sh "$APP"
           echo "Executable details:"
           ls -lh "$APP/$EXECUTABLE"
