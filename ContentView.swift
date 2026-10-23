@@ -5,19 +5,82 @@ import AVKit
 struct ContentView: View {
     @State private var selection = 0
 
+    private let tabs: [(String, String)] = [
+        ("Home", "square.grid.2x2.fill"),
+        ("Wallpapers", "photo.fill"),
+        ("AOD", "clock.fill"),
+        ("Glass", "slider.horizontal.3"),
+        ("Tweaks", "switch.2"),
+        ("Store", "square.stack.3d.up.fill")
+    ]
+
     var body: some View {
         TabView(selection: $selection) {
-            HomeView().tabItem { Label("Home", systemImage: "square.grid.2x2") }.tag(0)
-            WallpapersView().tabItem { Label("Wallpapers", systemImage: "photo") }.tag(1)
-            AODView().tabItem { Label("AOD", systemImage: "clock") }.tag(2)
-            GlassView().tabItem { Label("Glass", systemImage: "slider.horizontal.3") }.tag(3)
-            TweaksView().tabItem { Label("Tweaks", systemImage: "wrench.and.screwdriver") }.tag(4)
-            StoreView().tabItem { Label("Store", systemImage: "square.stack.3d.up") }.tag(5)
+            HomeView().tag(0)
+            WallpapersView().tag(1)
+            AODView().tag(2)
+            GlassView().tag(3)
+            TweaksView().tag(4)
+            StoreView().tag(5)
         }
-        .tint(Color(red: 0.76, green: 0.68, blue: 1.0))
-        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
-        .toolbarBackground(.visible, for: .tabBar)
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .toolbar(.hidden, for: .tabBar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            HStack(spacing: 4) {
+                ForEach(Array(tabs.enumerated()), id: \.offset) { index, tab in
+                    Button {
+                        withAnimation(.spring(response: 0.36, dampingFraction: 0.78)) {
+                            selection = index
+                        }
+                    } label: {
+                        VStack(spacing: 5) {
+                            Image(systemName: tab.1)
+                                .font(.system(size: 18, weight: selection == index ? .semibold : .regular))
+                                .symbolEffect(.bounce, value: selection == index)
+                            Text(tab.0)
+                                .font(.system(size: 9, weight: selection == index ? .semibold : .medium))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                        }
+                        .foregroundStyle(selection == index ? Color.white : Color.white.opacity(0.62))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background {
+                            if selection == index {
+                                Capsule()
+                                    .fill(.white.opacity(0.14))
+                                    .overlay(Capsule().stroke(.white.opacity(0.22), lineWidth: 0.8))
+                                    .modifier(AvailableGlassEffect())
+                            }
+                        }
+                        .contentShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(tab.0)
+                    .accessibilityAddTraits(selection == index ? .isSelected : [])
+                }
+            }
+            .padding(7)
+            .background(.ultraThinMaterial, in: Capsule())
+            .overlay(Capsule().stroke(.white.opacity(0.18), lineWidth: 1))
+            .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
+            .padding(.horizontal, 12)
+            .padding(.top, 7)
+            .padding(.bottom, 4)
+            .background(.clear)
+        }
+        .tint(Color(red: 0.78, green: 0.72, blue: 1.0))
         .preferredColorScheme(.dark)
+    }
+}
+
+struct AvailableGlassEffect: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular, in: Capsule())
+        } else {
+            content
+        }
     }
 }
 
@@ -299,7 +362,8 @@ struct AODView: View {
                                     Text("\(Int(dimLevel * 100))%").foregroundStyle(.secondary)
                                 }.font(.subheadline)
                                 Slider(value: $dimLevel, in: 0.12...0.32)
-                                    .tint(Color(red: 0.76, green: 0.68, blue: 1.0))
+                                    .tint(Color(red: 0.78, green: 0.72, blue: 1.0))
+                                    .modifier(AvailableGlassEffect())
                             }
                         }
                         .padding(18)
@@ -373,7 +437,11 @@ struct GlassView: View {
                     VStack(alignment: .leading) {
                         Text("Glass intensity \(Int(intensity * 100))%")
                         Slider(value: $intensity, in: 0...1)
+                            .tint(Color(red: 0.78, green: 0.72, blue: 1.0))
                     }
+                    .padding(16)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(.white.opacity(0.16), lineWidth: 1))
                     Picker("Tint", selection: $tint) {
                         Text("Silver").tag(0)
                         Text("Violet").tag(1)
