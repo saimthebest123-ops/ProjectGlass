@@ -2,25 +2,48 @@
 
 
 
+  
+workflows:
+  projectglass-ios:
+    name: Project Glass IPA
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      xcode: latest
+
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+
+      - name: Generate Xcode project
+        script: xcodegen generate
+
+      - name: Build app
+        script: |
+          xcodebuild \
+            -project ProjectGlass.xcodeproj \
+            -scheme ProjectGlass \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
       - name: Package unsigned IPA
         script: |
           set -e
           APP="build/Build/Products/Release-iphoneos/ProjectGlass.app"
-
-          test -d "$APP" || {
-            echo "ERROR: ProjectGlass.app not found"
-            exit 1
-          }
-
-          echo "App bundle contents:"
+          test -d "$APP"
+          echo "App bundle size:"
           du -sh "$APP"
-          find "$APP" -maxdepth 2 -type f | head -40
-
           rm -rf Payload ProjectGlass.ipa
           mkdir Payload
           cp -R "$APP" Payload/
           /usr/bin/zip -qry ProjectGlass.ipa Payload
-
           echo "Final IPA size:"
           ls -lh ProjectGlass.ipa
           /usr/bin/unzip -t ProjectGlass.ipa
+
+    artifacts:
+      - ProjectGlass.ipa
