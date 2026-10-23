@@ -25,9 +25,44 @@ struct HomeView: View {
                     Text("A dark customisation studio for iPhone.")
                         .foregroundStyle(.secondary)
                 }
+
+                Section("Your studio") {
+                    Label("Wallpaper concepts", systemImage: "photo")
+                    Label("Always-On Display clock preview", systemImage: "clock")
+                    Label("Liquid Glass style controls", systemImage: "slider.horizontal.3")
+                }
+
+                Section("Coming soon") {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "lock.screen")
+                            .font(.title2)
+                            .foregroundStyle(Color(red: 0.76, green: 0.68, blue: 1.0))
+                            .frame(width: 34)
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                Text("Lock Screen AOD")
+                                    .font(.headline)
+                                Spacer()
+                                Text("ROADMAP")
+                                    .font(.caption2.bold())
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(.purple.opacity(0.2), in: Capsule())
+                            }
+                            Text("A more realistic lock-screen concept preview, with a dim clock and wallpaper states.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text("Preview only — ordinary apps cannot replace iOS's native lock screen or enable system AOD on iPhone 16.")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+
                 Section("Reality check") {
-                    Label("In-app themes and previews work inside this app.", systemImage: "checkmark.circle")
-                    Label("A normal app cannot enable native Always-On Display on iPhone 16.", systemImage: "info.circle")
+                    Label("Themes and previews apply inside Project Glass.", systemImage: "checkmark.circle")
+                    Label("Native system AOD and system-wide Liquid Glass changes aren't available to an ordinary app.", systemImage: "info.circle")
                         .foregroundStyle(.orange)
                 }
             }
@@ -162,7 +197,8 @@ struct StoreView: View {
     private let packs = [
         ("Glassify", "Translucent interface concept"),
         ("Nightfall", "Dark visual theme"),
-        ("Ambient", "Dim lock-screen concept")
+        ("Ambient", "Dim lock-screen concept"),
+        ("Lock Screen AOD", "Coming soon — lock-screen concept preview")
     ]
     @State private var added: Set<String> = []
 
@@ -170,11 +206,17 @@ struct StoreView: View {
         NavigationStack {
             List(packs, id: \.0) { name, description in
                 VStack(alignment: .leading, spacing: 8) {
-                    Label(name, systemImage: "square.stack.3d.up")
+                    Label(name, systemImage: name == "Lock Screen AOD" ? "lock.screen" : "square.stack.3d.up")
                         .font(.headline)
                     Text(description).font(.subheadline).foregroundStyle(.secondary)
-                    Button(added.contains(name) ? "Added to demo ✓" : "Add to demo") {
-                        if added.contains(name) { added.remove(name) } else { added.insert(name) }
+                    if name == "Lock Screen AOD" {
+                        Text("ROADMAP")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.purple)
+                    } else {
+                        Button(added.contains(name) ? "Added to demo ✓" : "Add to demo") {
+                            if added.contains(name) { added.remove(name) } else { added.insert(name) }
+                        }
                     }
                 }.padding(.vertical, 5)
             }
