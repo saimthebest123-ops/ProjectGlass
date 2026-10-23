@@ -193,6 +193,7 @@ struct AODView: View {
 struct GlassView: View {
     @State private var intensity = 0.65
     @State private var tint = 0
+    @State private var isBlack = false
 
     private let colors: [Color] = [.white, .purple, .cyan, .mint]
 
@@ -200,7 +201,7 @@ struct GlassView: View {
         NavigationStack {
             VStack(spacing: 24) {
                 ZStack {
-                    LinearGradient(colors: [.indigo.opacity(0.5), .black, .purple.opacity(0.35)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    if isBlack { Color.black } else { LinearGradient(colors: [.indigo.opacity(0.5), .black, .purple.opacity(0.35)], startPoint: .topLeading, endPoint: .bottomTrailing) }
                     VStack(spacing: 16) {
                         Image(systemName: "waveform").font(.largeTitle)
                         Text("Liquid Glass").font(.title.bold())
@@ -211,11 +212,16 @@ struct GlassView: View {
                         }.font(.title2)
                     }
                     .padding(32)
-                    .background(.ultraThinMaterial.opacity(intensity))
-                    .overlay(RoundedRectangle(cornerRadius: 26).stroke(colors[tint].opacity(0.8), lineWidth: 1))
+                    .background(isBlack ? Color.black : Color.white.opacity(intensity * 0.12))
+                    .overlay(RoundedRectangle(cornerRadius: 26).stroke(isBlack ? Color.black : colors[tint].opacity(0.8), lineWidth: 1))
                     .clipShape(RoundedRectangle(cornerRadius: 26))
                 }
                 .frame(height: 270).clipShape(RoundedRectangle(cornerRadius: 26)).padding()
+                Button(isBlack ? "Enable?" : "Disable?") { withAnimation { isBlack.toggle() } }
+                    .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(Color.black, in: RoundedRectangle(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.25)))
+                    .foregroundStyle(.white).padding(.horizontal)
                 Form {
                     VStack(alignment: .leading) {
                         Text("Glass intensity \(Int(intensity * 100))%")
