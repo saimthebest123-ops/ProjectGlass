@@ -17,10 +17,12 @@ targets:
       - path: ProjectGlassApp.swift
       - path: ContentView.swift
       - path: Assets.xcassets
+      - path: AppIconGenerator.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.projectglass.app
         PRODUCT_NAME: ProjectGlass
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_KEY_CFBundleDisplayName: Project Glass
         GENERATE_INFOPLIST_FILE: YES
         TARGETED_DEVICE_FAMILY: "1,2"
