@@ -116,6 +116,16 @@ struct AODView: View {
     @State private var selectedModel = ""
     @State private var selectedColor = "Black"
 
+    private var chosenColor: Color {
+        switch selectedColor {
+        case "White": return .white
+        case "Pink": return .pink
+        case "Teal": return .teal
+        case "Ultramarine": return Color(red: 0.16, green: 0.12, blue: 0.85)
+        default: return .black
+        }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 18) {
@@ -125,7 +135,7 @@ struct AODView: View {
                             LinearGradient(
                                 colors: isAODEnabled
                                     ? [.black, .black, Color(red: 0.015, green: 0.02, blue: 0.06)]
-                                    : [Color(red: 0.12, green: 0.10, blue: 0.25), .black, Color(red: 0.04, green: 0.13, blue: 0.20)],
+                                    : (selectedModel == "iPhone 16" ? [chosenColor.opacity(0.95), chosenColor, .black] : [Color(red: 0.12, green: 0.10, blue: 0.25), .black, Color(red: 0.04, green: 0.13, blue: 0.20)]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
