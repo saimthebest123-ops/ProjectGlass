@@ -1,9 +1,10 @@
 
 
 
+
 workflows:
   projectglass-ios:
-    name: Project Glass iOS Build
+    name: Project Glass IPA
     max_build_duration: 60
     instance_type: mac_mini_m2
 
@@ -19,7 +20,7 @@ workflows:
         script: |
           xcodegen generate
 
-      - name: Build iOS app
+      - name: Build app
         script: |
           xcodebuild \
             -project ProjectGlass.xcodeproj \
@@ -30,5 +31,11 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             build
 
+      - name: Package unsigned IPA
+        script: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/ProjectGlass.app Payload/
+          /usr/bin/zip -qry ProjectGlass.ipa Payload
+
     artifacts:
-      - build/Build/Products/Release-iphoneos/*.app
+      - ProjectGlass.ipa
