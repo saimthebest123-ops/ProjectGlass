@@ -108,34 +108,76 @@ struct WallpapersView: View {
 
 struct AODView: View {
     @State private var tallClock = true
+    @State private var isAODEnabled = false
     @State private var dimLevel = 0.35
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                Spacer()
-                VStack(spacing: 10) {
-                    Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()).uppercased())
-                        .font(.caption2).tracking(2).foregroundStyle(.white.opacity(0.5))
-                    Text(Date.now.formatted(date: .omitted, time: .shortened))
-                        .font(.system(size: tallClock ? 76 : 54, weight: .ultraLight, design: .rounded))
-                        .foregroundStyle(.white.opacity(dimLevel))
-                    Text("AOD CONCEPT PREVIEW")
-                        .font(.caption2).tracking(2).foregroundStyle(.white.opacity(0.35))
+            VStack(spacing: 18) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 28)
+                        .fill(
+                            LinearGradient(
+                                colors: isAODEnabled
+                                    ? [.black, .black, Color(red: 0.015, green: 0.02, blue: 0.06)]
+                                    : [Color(red: 0.12, green: 0.10, blue: 0.25), .black, Color(red: 0.04, green: 0.13, blue: 0.20)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .overlay(alignment: .topTrailing) {
+                            Circle()
+                                .fill(Color.cyan.opacity(isAODEnabled ? 0.025 : 0.22))
+                                .frame(width: 180, height: 180)
+                                .blur(radius: 55)
+                                .offset(x: 35, y: -20)
+                        }
+
+                    VStack(spacing: 10) {
+                        Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()).uppercased())
+                            .font(.caption2).tracking(2)
+                            .foregroundStyle(.white.opacity(isAODEnabled ? 0.42 : 0.75))
+                        Text(Date.now.formatted(date: .omitted, time: .shortened))
+                            .font(.system(size: tallClock ? 76 : 54, weight: .ultraLight, design: .rounded))
+                            .foregroundStyle(.white.opacity(isAODEnabled ? min(dimLevel, 0.32) : 1.0))
+                            .shadow(color: .white.opacity(isAODEnabled ? 0.0 : 0.16), radius: 14)
+                        Text(isAODEnabled ? "ALWAYS-ON CONCEPT" : "AOD CONCEPT PREVIEW")
+                            .font(.caption2).tracking(2)
+                            .foregroundStyle(.white.opacity(isAODEnabled ? 0.22 : 0.45))
+                    }
+                    .scaleEffect(isAODEnabled ? 0.94 : 1.0)
+                    .animation(.easeInOut(duration: 0.65), value: isAODEnabled)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black)
                 .clipShape(RoundedRectangle(cornerRadius: 28))
                 .padding(.horizontal)
-                Spacer()
+                .frame(maxHeight: .infinity)
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.65)) {
+                        isAODEnabled.toggle()
+                    }
+                } label: {
+                    Label(
+                        isAODEnabled ? "Wake Display" : "Enable AOD",
+                        systemImage: isAODEnabled ? "sun.max.fill" : "moon.zzz.fill"
+                    )
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 15)
+                    .background(isAODEnabled ? Color.white.opacity(0.13) : Color(red: 0.55, green: 0.44, blue: 0.95), in: RoundedRectangle(cornerRadius: 16))
+                    .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
+
                 Form {
                     Toggle("Tall clock", isOn: $tallClock)
                     VStack(alignment: .leading) {
-                        Text("Clock brightness")
-                        Slider(value: $dimLevel, in: 0.12...0.8)
+                        Text("Dimmed clock brightness")
+                        Slider(value: $dimLevel, in: 0.12...0.32)
                     }
                     Section {
-                        Text("This is an in-app preview. It cannot stay visible on the lock screen or add native Always-On Display to the iPhone 16.")
+                        Text("AOD is a simulated preview inside Project Glass. It cannot control the real lock screen or power button.")
                             .font(.footnote).foregroundStyle(.orange)
                     }
                 }
