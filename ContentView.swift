@@ -407,7 +407,6 @@ struct AODView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
 }
 
@@ -491,7 +490,6 @@ struct GlassView: View {
             .navigationTitle("Glass Studio")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .preferredColorScheme(.dark)
     }
 }
 
