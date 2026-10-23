@@ -522,7 +522,7 @@ struct TweaksView: View {
                             HStack {
                                 Text("Glass intensity")
                                 Spacer()
-                                Text("\\(Int(glassIntensity * 100))%")
+                                Text("\(Int(glassIntensity * 100))%")
                                     .foregroundStyle(.secondary).monospacedDigit()
                             }
                             Slider(value: $glassIntensity, in: 0...1)
@@ -536,7 +536,7 @@ struct TweaksView: View {
                             Text("Tint")
                                 .font(.subheadline.weight(.semibold))
                             HStack(spacing: 12) {
-                                ForEach(tintColors.indices, id: \\.self) { index in
+                                ForEach(tintColors.indices, id: \.self) { index in
                                     Button {
                                         glassTint = index
                                     } label: {
@@ -571,7 +571,7 @@ struct TweaksView: View {
                         HStack {
                             Text("Dim clock brightness")
                             Spacer()
-                            Text("\\(Int(dimLevel * 100))%").foregroundStyle(.secondary).monospacedDigit()
+                            Text("\(Int(dimLevel * 100))%").foregroundStyle(.secondary).monospacedDigit()
                         }.font(.subheadline)
                         Slider(value: $dimLevel, in: 0.12...0.32).tint(.cyan)
                         Toggle("Breathing blue glow", isOn: $breathingGlow)
@@ -586,7 +586,7 @@ struct TweaksView: View {
                         HStack {
                             Text("Animation speed")
                             Spacer()
-                            Text(reduceMotion ? "Reduced" : "\\(Int(animationSpeed * 100))%")
+                            Text(reduceMotion ? "Reduced" : "\(Int(animationSpeed * 100))%")
                                 .foregroundStyle(.secondary).monospacedDigit()
                         }.font(.subheadline)
                         Slider(value: $animationSpeed, in: 0.2...1.0).disabled(reduceMotion)
