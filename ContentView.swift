@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import AVKit
 
 struct ContentView: View {
     @State private var selection = 0
@@ -118,6 +119,8 @@ struct AODView: View {
     @State private var selectedColor = "Black"
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var photoData: Data?
+    @State private var selectedVideo: PhotosPickerItem?
+    @State private var liveWallpaperPlayer: AVPlayer?
 
     private var chosenColor: Color {
         switch selectedColor {
