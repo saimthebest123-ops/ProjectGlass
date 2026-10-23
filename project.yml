@@ -14,22 +14,8 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
-      - path: .
-        excludes:
-          - .git
-          - .git/**
-          - "**/.git/**"
-          - build
-          - build/**
-          - Payload
-          - Payload/**
-          - "*.ipa"
-          - README.md
-          - Package.swift
-          - codemagic.yaml
-          - project.yml
-          - "*.xcodeproj"
-          - "*.xcodeproj/**"
+      - path: ProjectGlassApp.swift
+      - path: ContentView.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.projectglass.app
