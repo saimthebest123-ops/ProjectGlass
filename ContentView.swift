@@ -4,6 +4,7 @@ import AVKit
 
 struct ContentView: View {
     @State private var selection = 0
+    @AppStorage("pgDarkAppearance") private var darkAppearance = true
 
     private let tabs: [(String, String)] = [
         ("Home", "square.grid.2x2.fill"),
@@ -79,7 +80,7 @@ struct ContentView: View {
                 })
         }
         .tint(Color(red: 0.78, green: 0.72, blue: 1.0))
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(darkAppearance ? .dark : .light)
     }
 }
 
@@ -185,20 +186,20 @@ struct WallpapersView: View {
 }
 
 struct AODView: View {
-    @State private var tallClock = true
-    @State private var isAODEnabled = false
-    @State private var dimLevel = 0.24
+    @AppStorage("pgTallClock") private var tallClock = true
+    @AppStorage("pgAODPreviewDimmed") private var isAODEnabled = false
+    @AppStorage("pgAODDimLevel") private var dimLevel = 0.24
     @State private var showModels = false
     @State private var showColors = false
-    @State private var selectedModel = ""
-    @State private var selectedColor = "Black"
+    @AppStorage("pgAODModel") private var selectedModel = ""
+    @AppStorage("pgAODColor") private var selectedColor = "Black"
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var photoData: Data?
     @State private var selectedVideo: PhotosPickerItem?
     @State private var liveWallpaperPlayer: AVPlayer?
-    @State private var breathingGlow = true
-    @State private var floatingParticles = true
-    @State private var clockBloom = true
+    @AppStorage("pgBreathingGlow") private var breathingGlow = true
+    @AppStorage("pgFloatingParticles") private var floatingParticles = true
+    @AppStorage("pgClockBloom") private var clockBloom = true
     @State private var pulse = false
 
     private var chosenColor: Color {
@@ -411,9 +412,9 @@ struct AODView: View {
 }
 
 struct GlassView: View {
-    @State private var intensity = 0.65
-    @State private var tint = 0
-    @State private var isBlack = false
+    @AppStorage("pgGlassIntensity") private var intensity = 0.65
+    @AppStorage("pgGlassTint") private var tint = 0
+    @AppStorage("pgGlassBlackPreview") private var isBlack = false
     private let colors: [Color] = [.white, .purple, .cyan, .mint]
 
     var body: some View {
@@ -495,11 +496,181 @@ struct GlassView: View {
 }
 
 struct TweaksView: View {
+    @AppStorage("pgGlassIntensity") private var glassIntensity = 0.65
+    @AppStorage("pgGlassTint") private var glassTint = 0
+    @AppStorage("pgGlassBlackPreview") private var blackGlassPreview = false
+    @AppStorage("pgDarkAppearance") private var darkAppearance = true
+    @AppStorage("pgTallClock") private var tallClock = true
+    @AppStorage("pgAODPreviewDimmed") private var aodDimmed = false
+    @AppStorage("pgAODDimLevel") private var dimLevel = 0.24
+    @AppStorage("pgBreathingGlow") private var breathingGlow = true
+    @AppStorage("pgFloatingParticles") private var floatingParticles = true
+    @AppStorage("pgClockBloom") private var clockBloom = true
+    @AppStorage("pgAnimationSpeed") private var animationSpeed = 0.65
+    @AppStorage("pgReduceMotion") private var reduceMotion = false
+    @State private var showSystemLimit = false
+
+    private let tintNames = ["Pearl", "Violet", "Cyan", "Mint"]
+    private let tintColors: [Color] = [.white, .purple, .cyan, .mint]
+
     var body: some View {
         NavigationStack {
-            ContentUnavailableView("To be added.", systemImage: "wrench.and.screwdriver", description: Text("Tweaks are coming in a future update."))
-                .navigationTitle("Tweaks")
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 14) {
+                    headerCard
+
+                    sectionCard("LIQUID GLASS", icon: "slider.horizontal.3") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text("Glass intensity")
+                                Spacer()
+                                Text("\\(Int(glassIntensity * 100))%")
+                                    .foregroundStyle(.secondary).monospacedDigit()
+                            }
+                            Slider(value: $glassIntensity, in: 0...1)
+                                .tint(tintColors[min(max(glassTint, 0), tintColors.count - 1)])
+                            HStack {
+                                Text("Subtle")
+                                Spacer()
+                                Text("Strong")
+                            }.font(.caption2).foregroundStyle(.secondary)
+
+                            Text("Tint")
+                                .font(.subheadline.weight(.semibold))
+                            HStack(spacing: 12) {
+                                ForEach(tintColors.indices, id: \\.self) { index in
+                                    Button {
+                                        glassTint = index
+                                    } label: {
+                                        VStack(spacing: 5) {
+                                            Circle().fill(tintColors[index])
+                                                .frame(width: 30, height: 30)
+                                                .overlay(Circle().stroke(.white.opacity(glassTint == index ? 1 : 0.28), lineWidth: glassTint == index ? 3 : 1))
+                                            Text(tintNames[index]).font(.caption2)
+                                        }.frame(maxWidth: .infinity)
+                                    }.buttonStyle(.plain)
+                                }
+                            }
+                            Toggle("Black glass preview", isOn: $blackGlassPreview)
+                            Text("These saved controls also update Glass Studio. They change ProjectGlass previews, not the iOS interface.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+
+                    sectionCard("SYSTEM-STYLE CUSTOMIZATION", icon: "circle.lefthalf.filled") {
+                        Toggle("Dark appearance", isOn: $darkAppearance)
+                        Text("Changes ProjectGlass's appearance only. iOS Settings and other apps are unaffected.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        HStack(spacing: 10) {
+                            styleSwatch("Dark", color: Color(red: 0.035, green: 0.035, blue: 0.06), selected: darkAppearance)
+                            styleSwatch("Light", color: Color(red: 0.86, green: 0.87, blue: 0.92), selected: !darkAppearance)
+                        }
+                    }
+
+                    sectionCard("LOCK SCREEN / AOD", icon: "lock.screen") {
+                        Toggle("Tall clock", isOn: $tallClock)
+                        Toggle("Dimmed AOD preview", isOn: $aodDimmed)
+                        HStack {
+                            Text("Dim clock brightness")
+                            Spacer()
+                            Text("\\(Int(dimLevel * 100))%").foregroundStyle(.secondary).monospacedDigit()
+                        }.font(.subheadline)
+                        Slider(value: $dimLevel, in: 0.12...0.32).tint(.cyan)
+                        Toggle("Breathing blue glow", isOn: $breathingGlow)
+                        Toggle("Floating particles", isOn: $floatingParticles)
+                        Toggle("Clock bloom", isOn: $clockBloom)
+                        Text("These settings are shared with AOD Studio. The clock and wallpaper remain a concept preview.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+
+                    sectionCard("ANIMATION CONTROLS", icon: "sparkles") {
+                        Toggle("Reduce motion", isOn: $reduceMotion)
+                        HStack {
+                            Text("Animation speed")
+                            Spacer()
+                            Text(reduceMotion ? "Reduced" : "\\(Int(animationSpeed * 100))%")
+                                .foregroundStyle(.secondary).monospacedDigit()
+                        }.font(.subheadline)
+                        Slider(value: $animationSpeed, in: 0.2...1.0).disabled(reduceMotion)
+                        HStack {
+                            Text("Slow")
+                            Spacer()
+                            Text("Fast")
+                        }.font(.caption2).foregroundStyle(.secondary)
+                        Text("These are saved preview preferences; they do not change iOS system animations.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+
+                    sectionCard("EXPERIMENTAL", icon: "flask") {
+                        Label("Settings sync between Tweaks, Glass Studio, and AOD Studio", systemImage: "checkmark.circle.fill")
+                            .font(.subheadline)
+                        Label("Saved on this device inside ProjectGlass", systemImage: "internaldrive")
+                            .font(.subheadline)
+                        Button {
+                            showSystemLimit = true
+                        } label: {
+                            Label("Apply settings to my iPhone", systemImage: "iphone.gen3")
+                                .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 13)
+                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 15))
+                                .overlay(RoundedRectangle(cornerRadius: 15).stroke(.white.opacity(0.18), lineWidth: 1))
+                        }.buttonStyle(.plain)
+                        Text("System-wide application is not available to a normal iOS app. This button explains the limitation; it will not claim to change your phone.")
+                            .font(.caption).foregroundStyle(.orange)
+                    }
+                }
+                .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 24)
+                .frame(maxWidth: 620).frame(maxWidth: .infinity)
+            }
+            .background(Color(red: 0.025, green: 0.025, blue: 0.045).ignoresSafeArea())
+            .navigationTitle("Tweaks")
+            .navigationBarTitleDisplayMode(.inline)
+            .alert("iOS system access is restricted", isPresented: $showSystemLimit) {
+                Button("Got it", role: .cancel) { }
+            } message: {
+                Text("ProjectGlass can save these settings and use them in its own Glass and AOD previews. A normal iOS app cannot apply custom AOD, replace the real Lock Screen, or change Liquid Glass across iOS and other apps. That would require system privileges iOS does not grant to ordinary apps.")
+            }
         }
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: "switch.2").font(.system(size: 30, weight: .light)).foregroundStyle(.purple)
+            Text("Tweaks Studio").font(.title2.bold())
+            Text("Fine-tune your ProjectGlass experience. Changes save automatically.")
+                .font(.subheadline).foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Image(systemName: "iphone")
+                Text("In-app settings")
+            }
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .background(.purple.opacity(0.16), in: Capsule())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(0.16), lineWidth: 1))
+    }
+
+    private func sectionCard<Content: View>(_ title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 13) {
+            Label(title, systemImage: icon)
+                .font(.caption.bold()).tracking(0.7)
+                .foregroundStyle(.secondary)
+            content()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.12), lineWidth: 1))
+    }
+
+    private func styleSwatch(_ name: String, color: Color, selected: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            RoundedRectangle(cornerRadius: 12).fill(color).frame(height: 45)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color.purple : Color.white.opacity(0.16), lineWidth: selected ? 2 : 1))
+            Text(name).font(.caption.weight(.medium))
+        }.frame(maxWidth: .infinity)
     }
 }
 
