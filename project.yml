@@ -17,7 +17,6 @@ targets:
       - path: ProjectGlassApp.swift
       - path: ContentView.swift
       - path: Assets.xcassets
-      - path: AppIconGenerator.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.projectglass.app
