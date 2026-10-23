@@ -1,8 +1,3 @@
-
-
-
-
-  
 workflows:
   projectglass-ios:
     name: Project Glass IPA
@@ -14,13 +9,18 @@ workflows:
 
     scripts:
       - name: Install XcodeGen
-        script: brew install xcodegen
+        script: |
+          set -euo pipefail
+          brew install xcodegen
 
       - name: Generate Xcode project
-        script: xcodegen generate
-
-      - name: Build app
         script: |
+          set -euo pipefail
+          xcodegen generate
+
+      - name: Build unsigned iOS app
+        script: |
+          set -euo pipefail
           xcodebuild \
             -project ProjectGlass.xcodeproj \
             -scheme ProjectGlass \
@@ -30,20 +30,47 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Package unsigned IPA
+      - name: Verify app and package unsigned IPA
         script: |
-          set -e
+          set -euo pipefail
           APP="build/Build/Products/Release-iphoneos/ProjectGlass.app"
-          test -d "$APP"
-          echo "App bundle size:"
+
+          if [ ! -d "$APP" ]; then
+            echo "ERROR: App bundle not found at $APP"
+            find build -maxdepth 6 -name "*.app" -print || true
+            exit 1
+          fi
+
+          if [ ! -f "$APP/Info.plist" ]; then
+            echo "ERROR: Info.plist is missing"
+            exit 1
+          fi
+
+          EXECUTABLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
+          if [ ! -f "$APP/$EXECUTABLE" ]; then
+            echo "ERROR: Executable missing: $APP/$EXECUTABLE"
+            exit 1
+          fi
+
+          echo "App bundle:"
           du -sh "$APP"
+          echo "Executable details:"
+          ls -lh "$APP/$EXECUTABLE"
+          file "$APP/$EXECUTABLE"
+          echo "Bundle identifier:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist"
+
           rm -rf Payload ProjectGlass.ipa
-          mkdir Payload
+          mkdir -p Payload
           cp -R "$APP" Payload/
           /usr/bin/zip -qry ProjectGlass.ipa Payload
-          echo "Final IPA size:"
+
+          echo "IPA archive size:"
           ls -lh ProjectGlass.ipa
+          echo "Archive validation:"
           /usr/bin/unzip -t ProjectGlass.ipa
+          echo "IPA contents:"
+          /usr/bin/unzip -l ProjectGlass.ipa
 
     artifacts:
       - ProjectGlass.ipa
