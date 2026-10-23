@@ -13,6 +13,12 @@ workflows:
           set -euo pipefail
           brew install xcodegen
 
+      - name: Generate app icon PNG
+        script: |
+          set -euo pipefail
+          mkdir -p Assets.xcassets/AppIcon.appiconset
+          swift AppIconGenerator.swift
+
       - name: Generate Xcode project
         script: |
           set -euo pipefail
