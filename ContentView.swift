@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ContentView: View {
     @State private var selection = 0
@@ -115,6 +116,8 @@ struct AODView: View {
     @State private var showColors = false
     @State private var selectedModel = ""
     @State private var selectedColor = "Black"
+    @State private var selectedPhoto: PhotosPickerItem?
+    @State private var photoData: Data?
 
     private var chosenColor: Color {
         switch selectedColor {
