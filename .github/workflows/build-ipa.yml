@@ -1,0 +1,64 @@
+name: Build ProjectGlass IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ProjectGlassApp.swift'
+      - 'ContentView.swift'
+      - 'project.yml'
+      - '.github/workflows/build-ipa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-ipa:
+    name: Build unsigned iOS IPA
+    runs-on: macos-15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build app
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ProjectGlass.xcodeproj \
+            -scheme ProjectGlass \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package and verify IPA
+        run: |
+          set -euo pipefail
+          APP="build/Build/Products/Release-iphoneos/ProjectGlass.app"
+          test -d "$APP"
+          test -f "$APP/Info.plist"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          /usr/bin/zip -qry ProjectGlass.ipa Payload
+          /usr/bin/unzip -t ProjectGlass.ipa
+          echo "IPA created:"
+          ls -lh ProjectGlass.ipa
+          echo "Files in IPA:"
+          /usr/bin/unzip -Z1 ProjectGlass.ipa | head -80
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProjectGlass-unsigned-IPA
+          path: ProjectGlass.ipa
+          if-no-files-found: error
+          retention-days: 7
