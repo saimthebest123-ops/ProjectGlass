@@ -1,4 +1,3 @@
-
 name: ProjectGlass
 
 options:
@@ -17,10 +16,20 @@ targets:
     sources:
       - path: .
         excludes:
+          - .git
+          - .git/**
+          - "**/.git/**"
+          - build
+          - build/**
+          - Payload
+          - Payload/**
+          - "*.ipa"
           - README.md
           - Package.swift
           - codemagic.yaml
           - project.yml
+          - "*.xcodeproj"
+          - "*.xcodeproj/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.projectglass.app
