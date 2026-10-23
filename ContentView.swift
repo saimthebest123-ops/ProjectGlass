@@ -121,6 +121,10 @@ struct AODView: View {
     @State private var photoData: Data?
     @State private var selectedVideo: PhotosPickerItem?
     @State private var liveWallpaperPlayer: AVPlayer?
+    @State private var breathingGlow = true
+    @State private var floatingParticles = true
+    @State private var clockBloom = true
+    @State private var pulse = false
 
     private var chosenColor: Color {
         switch selectedColor {
@@ -154,6 +158,30 @@ struct AODView: View {
                                 .offset(x: 35, y: -20)
                         }
 
+                    if breathingGlow {
+                        Circle()
+                            .fill(Color(red: 0.22, green: 0.48, blue: 1.0).opacity(isAODEnabled ? 0.08 : 0.24))
+                            .frame(width: pulse ? 230 : 150, height: pulse ? 230 : 150)
+                            .blur(radius: pulse ? 62 : 38)
+                            .offset(x: pulse ? 65 : 35, y: pulse ? -90 : -45)
+                            .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: pulse)
+                            .allowsHitTesting(false)
+                    }
+                    if floatingParticles {
+                        GeometryReader { geometry in
+                            ForEach(0..<12, id: \.self) { index in
+                                Circle()
+                                    .fill(Color.white.opacity(isAODEnabled ? 0.10 : 0.28))
+                                    .frame(width: index.isMultiple(of: 3) ? 3 : 2, height: index.isMultiple(of: 3) ? 3 : 2)
+                                    .position(
+                                        x: geometry.size.width * CGFloat((index * 37 + 13) % 100) / 100,
+                                        y: geometry.size.height * CGFloat((index * 61 + 19) % 100) / 100
+                                    )
+                            }
+                        }
+                        .allowsHitTesting(false)
+                    }
+
                     if let liveWallpaperPlayer {
                         VideoPlayer(player: liveWallpaperPlayer)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -171,7 +199,7 @@ struct AODView: View {
                         Text(Date.now.formatted(date: .omitted, time: .shortened))
                             .font(.system(size: tallClock ? 76 : 54, weight: .ultraLight, design: .rounded))
                             .foregroundStyle(.white.opacity(isAODEnabled ? min(dimLevel, 0.32) : 1.0))
-                            .shadow(color: .white.opacity(isAODEnabled ? 0.0 : 0.16), radius: 14)
+                            .shadow(color: .white.opacity(clockBloom && !isAODEnabled ? 0.55 : 0.0), radius: clockBloom && !isAODEnabled ? 22 : 0)
                         Text(isAODEnabled ? "ALWAYS-ON CONCEPT" : "AOD CONCEPT PREVIEW")
                             .font(.caption2).tracking(2)
                             .foregroundStyle(.white.opacity(isAODEnabled ? 0.22 : 0.45))
@@ -254,6 +282,9 @@ struct AODView: View {
 
                 Form {
                     Toggle("Tall clock", isOn: $tallClock)
+                    Toggle("Breathing blue glow", isOn: $breathingGlow)
+                    Toggle("Floating light particles", isOn: $floatingParticles)
+                    Toggle("Clock bloom", isOn: $clockBloom)
                     VStack(alignment: .leading) {
                         Text("Dimmed clock brightness")
                         Slider(value: $dimLevel, in: 0.12...0.32)
@@ -270,6 +301,12 @@ struct AODView: View {
             .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime)) { _ in
                 liveWallpaperPlayer?.seek(to: .zero)
                 liveWallpaperPlayer?.play()
+            }
+            .task {
+                while !Task.isCancelled {
+                    pulse.toggle()
+                    try? await Task.sleep(for: .seconds(2.4))
+                }
             }
         }
     }
