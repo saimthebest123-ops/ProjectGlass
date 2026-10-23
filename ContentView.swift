@@ -267,6 +267,10 @@ struct AODView: View {
             }
             .background(Color.black)
             .navigationTitle("AOD Studio")
+            .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime)) { _ in
+                liveWallpaperPlayer?.seek(to: .zero)
+                liveWallpaperPlayer?.play()
+            }
         }
     }
 }
