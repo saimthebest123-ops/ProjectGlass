@@ -1,0 +1,8 @@
+Package: com.projectglass.clocktint
+Name: ProjectGlass Clock Tint
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Experimental SpringBoard Lock Screen clock tint proof of concept for ProjectGlass.
+Maintainer: ProjectGlass
+Author: ProjectGlass
+Section: Tweaks
