@@ -111,6 +111,10 @@ struct AODView: View {
     @State private var tallClock = true
     @State private var isAODEnabled = false
     @State private var dimLevel = 0.35
+    @State private var showModels = false
+    @State private var showColors = false
+    @State private var selectedModel = ""
+    @State private var selectedColor = "Black"
 
     var body: some View {
         NavigationStack {
@@ -152,6 +156,25 @@ struct AODView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 28))
                 .padding(.horizontal)
                 .frame(maxHeight: .infinity)
+
+                Button("Add picture or Live Wallpaper") { showModels = true }
+                    .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+                    .foregroundStyle(.white).padding(.horizontal)
+                    .confirmationDialog("Choose wallpaper family", isPresented: $showModels, titleVisibility: .visible) {
+                        Button("iPhone 18") { selectedModel = "iPhone 18" }
+                        Button("iPhone 17") { selectedModel = "iPhone 17" }
+                        Button("iPhone 16") { selectedModel = "iPhone 16"; showColors = true }
+                        Button("iPhone 15") { selectedModel = "iPhone 15" }
+                        Button("iPhone 14") { selectedModel = "iPhone 14" }
+                    }
+                    .confirmationDialog("Color Chooser", isPresented: $showColors, titleVisibility: .visible) {
+                        Button("Black") { selectedColor = "Black" }
+                        Button("White") { selectedColor = "White" }
+                        Button("Pink") { selectedColor = "Pink" }
+                        Button("Teal") { selectedColor = "Teal" }
+                        Button("Ultramarine") { selectedColor = "Ultramarine" }
+                    }
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.65)) {
