@@ -9,7 +9,8 @@ struct ContentView: View {
             WallpapersView().tabItem { Label("Wallpapers", systemImage: "photo") }.tag(1)
             AODView().tabItem { Label("AOD", systemImage: "clock") }.tag(2)
             GlassView().tabItem { Label("Glass", systemImage: "slider.horizontal.3") }.tag(3)
-            StoreView().tabItem { Label("Store", systemImage: "square.stack.3d.up") }.tag(4)
+            TweaksView().tabItem { Label("Tweaks", systemImage: "wrench.and.screwdriver") }.tag(4)
+            StoreView().tabItem { Label("Store", systemImage: "square.stack.3d.up") }.tag(5)
         }
         .tint(Color(red: 0.76, green: 0.68, blue: 1.0))
     }
@@ -231,6 +232,15 @@ struct GlassView: View {
                     .font(.footnote).foregroundStyle(.secondary)
             }
             .navigationTitle("Glass Studio")
+        }
+    }
+}
+
+struct TweaksView: View {
+    var body: some View {
+        NavigationStack {
+            ContentUnavailableView("To be added.", systemImage: "wrench.and.screwdriver", description: Text("Tweaks are coming in a future update."))
+                .navigationTitle("Tweaks")
         }
     }
 }
