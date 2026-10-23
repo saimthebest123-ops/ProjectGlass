@@ -154,7 +154,12 @@ struct AODView: View {
                                 .offset(x: 35, y: -20)
                         }
 
-                    if let photoData, let image = UIImage(data: photoData) {
+                    if let liveWallpaperPlayer {
+                        VideoPlayer(player: liveWallpaperPlayer)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .clipped()
+                            .allowsHitTesting(false)
+                    } else if let photoData, let image = UIImage(data: photoData) {
                         Image(uiImage: image).resizable().scaledToFill()
                             .frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
                             .opacity(isAODEnabled ? 0.25 : 0.9)
@@ -186,6 +191,28 @@ struct AODView: View {
                 .padding(.horizontal)
                 .onChange(of: selectedPhoto) { _, item in
                     Task { photoData = try? await item?.loadTransferable(type: Data.self) }
+                }
+
+                PhotosPicker(selection: $selectedVideo, matching: .videos) {
+                    Label("Add Animated Wallpaper Video", systemImage: "play.rectangle")
+                        .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
+                        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+                        .foregroundStyle(.white)
+                }
+                .padding(.horizontal)
+                .onChange(of: selectedVideo) { _, item in
+                    Task {
+                        guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
+                        let url = FileManager.default.temporaryDirectory.appendingPathComponent("ProjectGlassLiveWallpaper.mov")
+                        do {
+                            try data.write(to: url, options: .atomic)
+                            liveWallpaperPlayer = AVPlayer(url: url)
+                            liveWallpaperPlayer?.isMuted = true
+                            liveWallpaperPlayer?.play()
+                        } catch {
+                            liveWallpaperPlayer = nil
+                        }
+                    }
                 }
 
                 Button("Browse Live Wallpaper Concepts") { showModels = true }
