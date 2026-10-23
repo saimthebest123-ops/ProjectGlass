@@ -99,9 +99,21 @@ struct HomeView: View {
         NavigationStack {
             List {
                 Section {
-                    Label("Project Glass", systemImage: "layers.3")
-                        .font(.largeTitle.bold())
-                    Text("A dark customisation studio for iPhone.")
+                    HStack(spacing: 14) {
+                        Image("ProjectGlassLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 76, height: 76)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .accessibilityLabel("ProjectGlass logo")
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("ProjectGlass")
+                                .font(.largeTitle.bold())
+                            Text("A dark customisation studio for iPhone.")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 6)
                         .foregroundStyle(.secondary)
                 }
 
