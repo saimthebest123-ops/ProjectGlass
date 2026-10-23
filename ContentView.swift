@@ -76,11 +76,11 @@ struct ContentView: View {
 
 struct AvailableGlassEffect: ViewModifier {
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content.glassEffect(.regular, in: Capsule())
-        } else {
-            content
-        }
+        // Xcode 16's SDK does not expose the iOS 26 glassEffect API.
+        // Use SwiftUI material and highlight layers so this still builds on the current runner.
+        content
+            .background(.ultraThinMaterial, in: Capsule())
+            .overlay(Capsule().stroke(.white.opacity(0.18), lineWidth: 0.8))
     }
 }
 
