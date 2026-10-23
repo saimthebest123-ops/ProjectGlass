@@ -15,6 +15,9 @@ struct ContentView: View {
             StoreView().tabItem { Label("Store", systemImage: "square.stack.3d.up") }.tag(5)
         }
         .tint(Color(red: 0.76, green: 0.68, blue: 1.0))
+        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .preferredColorScheme(.dark)
     }
 }
 
@@ -112,7 +115,7 @@ struct WallpapersView: View {
 struct AODView: View {
     @State private var tallClock = true
     @State private var isAODEnabled = false
-    @State private var dimLevel = 0.35
+    @State private var dimLevel = 0.24
     @State private var showModels = false
     @State private var showColors = false
     @State private var selectedModel = ""
@@ -138,166 +141,187 @@ struct AODView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 18) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(
-                            LinearGradient(
-                                colors: isAODEnabled
-                                    ? [.black, .black, Color(red: 0.015, green: 0.02, blue: 0.06)]
-                                    : (selectedModel == "iPhone 16" ? [chosenColor.opacity(0.95), chosenColor, .black] : [Color(red: 0.12, green: 0.10, blue: 0.25), .black, Color(red: 0.04, green: 0.13, blue: 0.20)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .overlay(alignment: .topTrailing) {
-                            Circle()
-                                .fill(Color.cyan.opacity(isAODEnabled ? 0.025 : 0.22))
-                                .frame(width: 180, height: 180)
-                                .blur(radius: 55)
-                                .offset(x: 35, y: -20)
-                        }
-
-                    if breathingGlow {
-                        Circle()
-                            .fill(Color(red: 0.22, green: 0.48, blue: 1.0).opacity(isAODEnabled ? 0.08 : 0.24))
-                            .frame(width: pulse ? 230 : 150, height: pulse ? 230 : 150)
-                            .blur(radius: pulse ? 62 : 38)
-                            .offset(x: pulse ? 65 : 35, y: pulse ? -90 : -45)
-                            .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: pulse)
-                            .allowsHitTesting(false)
-                    }
-                    if floatingParticles {
-                        GeometryReader { geometry in
-                            ForEach(0..<12, id: \.self) { index in
-                                Circle()
-                                    .fill(Color.white.opacity(isAODEnabled ? 0.10 : 0.28))
-                                    .frame(width: index.isMultiple(of: 3) ? 3 : 2, height: index.isMultiple(of: 3) ? 3 : 2)
-                                    .position(
-                                        x: geometry.size.width * CGFloat((index * 37 + 13) % 100) / 100,
-                                        y: geometry.size.height * CGFloat((index * 61 + 19) % 100) / 100
+            GeometryReader { geometry in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: isAODEnabled
+                                            ? [.black, .black, Color(red: 0.015, green: 0.02, blue: 0.06)]
+                                            : (selectedModel == "iPhone 16" ? [chosenColor.opacity(0.95), chosenColor, .black] : [Color(red: 0.12, green: 0.10, blue: 0.25), .black, Color(red: 0.04, green: 0.13, blue: 0.20)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
                                     )
+                                )
+                            Circle()
+                                .fill(Color.cyan.opacity(isAODEnabled ? 0.025 : 0.20))
+                                .frame(width: 170, height: 170)
+                                .blur(radius: 55)
+                                .offset(x: 60, y: -geometry.size.height * 0.12)
+                                .allowsHitTesting(false)
+
+                            if breathingGlow {
+                                Circle()
+                                    .fill(Color(red: 0.22, green: 0.48, blue: 1.0).opacity(isAODEnabled ? 0.08 : 0.24))
+                                    .frame(width: pulse ? 220 : 145, height: pulse ? 220 : 145)
+                                    .blur(radius: pulse ? 60 : 36)
+                                    .offset(x: pulse ? 55 : 30, y: -40)
+                                    .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: pulse)
+                                    .allowsHitTesting(false)
+                            }
+                            if floatingParticles {
+                                GeometryReader { geo in
+                                    ForEach(0..<12, id: \.self) { index in
+                                        Circle()
+                                            .fill(Color.white.opacity(isAODEnabled ? 0.10 : 0.28))
+                                            .frame(width: index.isMultiple(of: 3) ? 3 : 2, height: index.isMultiple(of: 3) ? 3 : 2)
+                                            .position(
+                                                x: geo.size.width * CGFloat((index * 37 + 13) % 100) / 100,
+                                                y: geo.size.height * CGFloat((index * 61 + 19) % 100) / 100
+                                            )
+                                    }
+                                }
+                                .allowsHitTesting(false)
+                            }
+
+                            if let liveWallpaperPlayer {
+                                VideoPlayer(player: liveWallpaperPlayer)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .clipped()
+                                    .allowsHitTesting(false)
+                            } else if let photoData, let image = UIImage(data: photoData) {
+                                Image(uiImage: image).resizable().scaledToFill()
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
+                                    .opacity(isAODEnabled ? 0.25 : 0.9)
+                            }
+
+                            VStack(spacing: 10) {
+                                Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()).uppercased())
+                                    .font(.caption2).tracking(2)
+                                    .foregroundStyle(.white.opacity(isAODEnabled ? 0.42 : 0.75))
+                                Text(Date.now.formatted(date: .omitted, time: .shortened))
+                                    .font(.system(size: tallClock ? min(geometry.size.width * 0.17, 76) : 54, weight: .ultraLight, design: .rounded))
+                                    .minimumScaleFactor(0.65)
+                                    .lineLimit(1)
+                                    .foregroundStyle(.white.opacity(isAODEnabled ? min(dimLevel, 0.32) : 1.0))
+                                    .shadow(color: .white.opacity(clockBloom && !isAODEnabled ? 0.55 : 0.0), radius: clockBloom && !isAODEnabled ? 22 : 0)
+                                Text(isAODEnabled ? "ALWAYS-ON CONCEPT" : "AOD CONCEPT PREVIEW")
+                                    .font(.caption2).tracking(2)
+                                    .foregroundStyle(.white.opacity(isAODEnabled ? 0.22 : 0.45))
+                            }
+                            .padding(.horizontal, 14)
+                            .scaleEffect(isAODEnabled ? 0.94 : 1.0)
+                            .animation(.easeInOut(duration: 0.65), value: isAODEnabled)
+                        }
+                        .frame(height: min(max(geometry.size.height * 0.46, 260), 390))
+                        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).stroke(.white.opacity(0.16), lineWidth: 1))
+                        .shadow(color: .blue.opacity(0.12), radius: 24, y: 10)
+
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.65)) { isAODEnabled.toggle() }
+                        } label: {
+                            Label(isAODEnabled ? "Wake Display" : "Enable AOD", systemImage: isAODEnabled ? "sun.max.fill" : "moon.zzz.fill")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 15)
+                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(.white.opacity(0.2), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+
+                        HStack(spacing: 10) {
+                            PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                                Label("Add Picture", systemImage: "photo")
+                                    .frame(maxWidth: .infinity).padding(.vertical, 13)
+                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(.white.opacity(0.14), lineWidth: 1))
+                            }
+                            PhotosPicker(selection: $selectedVideo, matching: .videos) {
+                                Label("Add Video", systemImage: "play.rectangle")
+                                    .frame(maxWidth: .infinity).padding(.vertical, 13)
+                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(.white.opacity(0.14), lineWidth: 1))
                             }
                         }
-                        .allowsHitTesting(false)
-                    }
-
-                    if let liveWallpaperPlayer {
-                        VideoPlayer(player: liveWallpaperPlayer)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .clipped()
-                            .allowsHitTesting(false)
-                    } else if let photoData, let image = UIImage(data: photoData) {
-                        Image(uiImage: image).resizable().scaledToFill()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
-                            .opacity(isAODEnabled ? 0.25 : 0.9)
-                    }
-                    VStack(spacing: 10) {
-                        Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()).uppercased())
-                            .font(.caption2).tracking(2)
-                            .foregroundStyle(.white.opacity(isAODEnabled ? 0.42 : 0.75))
-                        Text(Date.now.formatted(date: .omitted, time: .shortened))
-                            .font(.system(size: tallClock ? 76 : 54, weight: .ultraLight, design: .rounded))
-                            .foregroundStyle(.white.opacity(isAODEnabled ? min(dimLevel, 0.32) : 1.0))
-                            .shadow(color: .white.opacity(clockBloom && !isAODEnabled ? 0.55 : 0.0), radius: clockBloom && !isAODEnabled ? 22 : 0)
-                        Text(isAODEnabled ? "ALWAYS-ON CONCEPT" : "AOD CONCEPT PREVIEW")
-                            .font(.caption2).tracking(2)
-                            .foregroundStyle(.white.opacity(isAODEnabled ? 0.22 : 0.45))
-                    }
-                    .scaleEffect(isAODEnabled ? 0.94 : 1.0)
-                    .animation(.easeInOut(duration: 0.65), value: isAODEnabled)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 28))
-                .padding(.horizontal)
-                .frame(maxHeight: .infinity)
-
-                PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                    Label("Add picture or Live Wallpaper", systemImage: "photo")
-                        .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
-                        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 14)).foregroundStyle(.white)
-                }
-                .padding(.horizontal)
-                .onChange(of: selectedPhoto) { _, item in
-                    Task { photoData = try? await item?.loadTransferable(type: Data.self) }
-                }
-
-                PhotosPicker(selection: $selectedVideo, matching: .videos) {
-                    Label("Add Animated Wallpaper Video", systemImage: "play.rectangle")
-                        .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
-                        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
-                        .foregroundStyle(.white)
-                }
-                .padding(.horizontal)
-                .onChange(of: selectedVideo) { _, item in
-                    Task {
-                        guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
-                        let url = FileManager.default.temporaryDirectory.appendingPathComponent("ProjectGlassLiveWallpaper.mov")
-                        do {
-                            try data.write(to: url, options: .atomic)
-                            liveWallpaperPlayer = AVPlayer(url: url)
-                            liveWallpaperPlayer?.isMuted = true
-                            liveWallpaperPlayer?.play()
-                        } catch {
-                            liveWallpaperPlayer = nil
+                        .font(.subheadline.weight(.semibold))
+                        .buttonStyle(.plain)
+                        .onChange(of: selectedPhoto) { _, item in
+                            Task { photoData = try? await item?.loadTransferable(type: Data.self) }
                         }
-                    }
-                }
+                        .onChange(of: selectedVideo) { _, item in
+                            Task {
+                                guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
+                                let url = FileManager.default.temporaryDirectory.appendingPathComponent("ProjectGlassLiveWallpaper.mov")
+                                do {
+                                    try data.write(to: url, options: .atomic)
+                                    liveWallpaperPlayer = AVPlayer(url: url)
+                                    liveWallpaperPlayer?.isMuted = true
+                                    liveWallpaperPlayer?.play()
+                                } catch {
+                                    liveWallpaperPlayer = nil
+                                }
+                            }
+                        }
 
-                Button("Browse Live Wallpaper Concepts") { showModels = true }
-                    .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
-                    .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
-                    .foregroundStyle(.white).padding(.horizontal)
-                    .confirmationDialog("Choose wallpaper family", isPresented: $showModels, titleVisibility: .visible) {
-                        Button("iPhone 18") { selectedModel = "iPhone 18" }
-                        Button("iPhone 17") { selectedModel = "iPhone 17" }
-                        Button("iPhone 16") { selectedModel = "iPhone 16"; showColors = true }
-                        Button("iPhone 15") { selectedModel = "iPhone 15" }
-                        Button("iPhone 14") { selectedModel = "iPhone 14" }
-                    }
-                    .confirmationDialog("Color Chooser", isPresented: $showColors, titleVisibility: .visible) {
-                        Button("Black") { selectedColor = "Black" }
-                        Button("White") { selectedColor = "White" }
-                        Button("Pink") { selectedColor = "Pink" }
-                        Button("Teal") { selectedColor = "Teal" }
-                        Button("Ultramarine") { selectedColor = "Ultramarine" }
-                    }
+                        Button("Browse Live Wallpaper Concepts  ·  \(selectedModel.isEmpty ? "Choose" : selectedModel)") { showModels = true }
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity).padding(.vertical, 14)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(.white.opacity(0.14), lineWidth: 1))
+                            .confirmationDialog("Choose wallpaper family", isPresented: $showModels, titleVisibility: .visible) {
+                                Button("iPhone 18") { selectedModel = "iPhone 18" }
+                                Button("iPhone 17") { selectedModel = "iPhone 17" }
+                                Button("iPhone 16") { selectedModel = "iPhone 16"; showColors = true }
+                                Button("iPhone 15") { selectedModel = "iPhone 15" }
+                                Button("iPhone 14") { selectedModel = "iPhone 14" }
+                            }
+                            .confirmationDialog("Color Chooser", isPresented: $showColors, titleVisibility: .visible) {
+                                Button("Black") { selectedColor = "Black" }
+                                Button("White") { selectedColor = "White" }
+                                Button("Pink") { selectedColor = "Pink" }
+                                Button("Teal") { selectedColor = "Teal" }
+                                Button("Ultramarine") { selectedColor = "Ultramarine" }
+                            }
 
-                Button {
-                    withAnimation(.easeInOut(duration: 0.65)) {
-                        isAODEnabled.toggle()
-                    }
-                } label: {
-                    Label(
-                        isAODEnabled ? "Wake Display" : "Enable AOD",
-                        systemImage: isAODEnabled ? "sun.max.fill" : "moon.zzz.fill"
-                    )
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(isAODEnabled ? Color.white.opacity(0.13) : Color(red: 0.55, green: 0.44, blue: 0.95), in: RoundedRectangle(cornerRadius: 16))
-                    .foregroundStyle(.white)
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal)
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("AMBIENT EFFECTS").font(.caption.bold()).tracking(1.5).foregroundStyle(.secondary)
+                            Toggle("Tall clock", isOn: $tallClock)
+                            Toggle("Breathing blue glow", isOn: $breathingGlow)
+                            Toggle("Floating light particles", isOn: $floatingParticles)
+                            Toggle("Clock bloom", isOn: $clockBloom)
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("Dimmed clock brightness")
+                                    Spacer()
+                                    Text("\(Int(dimLevel * 100))%").foregroundStyle(.secondary)
+                                }.font(.subheadline)
+                                Slider(value: $dimLevel, in: 0.12...0.32)
+                                    .tint(Color(red: 0.76, green: 0.68, blue: 1.0))
+                            }
+                        }
+                        .padding(18)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(.white.opacity(0.13), lineWidth: 1))
 
-                Form {
-                    Toggle("Tall clock", isOn: $tallClock)
-                    Toggle("Breathing blue glow", isOn: $breathingGlow)
-                    Toggle("Floating light particles", isOn: $floatingParticles)
-                    Toggle("Clock bloom", isOn: $clockBloom)
-                    VStack(alignment: .leading) {
-                        Text("Dimmed clock brightness")
-                        Slider(value: $dimLevel, in: 0.12...0.32)
-                    }
-                    Section {
-                        Text("AOD is a simulated preview inside Project Glass. It cannot control the real lock screen or power button.")
+                        Text("Preview only — this app can't replace iOS's real Lock Screen or control the Side button.")
                             .font(.footnote).foregroundStyle(.orange)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 28)
+                    .frame(maxWidth: 620)
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(height: 190)
+                .background(Color(red: 0.025, green: 0.025, blue: 0.045).ignoresSafeArea())
             }
-            .background(Color.black)
             .navigationTitle("AOD Studio")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime)) { _ in
                 liveWallpaperPlayer?.seek(to: .zero)
                 liveWallpaperPlayer?.play()
@@ -309,6 +333,7 @@ struct AODView: View {
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 }
 
