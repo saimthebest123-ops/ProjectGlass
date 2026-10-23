@@ -405,55 +405,83 @@ struct GlassView: View {
     @State private var intensity = 0.65
     @State private var tint = 0
     @State private var isBlack = false
-
     private let colors: [Color] = [.white, .purple, .cyan, .mint]
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                ZStack {
-                    if isBlack { Color.black } else { LinearGradient(colors: [.indigo.opacity(0.5), .black, .purple.opacity(0.35)], startPoint: .topLeading, endPoint: .bottomTrailing) }
-                    VStack(spacing: 16) {
-                        Image(systemName: "waveform").font(.largeTitle)
-                        Text("Liquid Glass").font(.title.bold())
-                        HStack {
-                            Image(systemName: "wifi")
-                            Image(systemName: "moon")
-                            Image(systemName: "airplayvideo")
-                        }.font(.title2)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 24).fill(isBlack ? Color.black : Color.indigo.opacity(0.45).gradient)
+                        VStack(spacing: 12) {
+                            Image(systemName: "waveform").font(.system(size: 30, weight: .light))
+                            Text("Liquid Glass").font(.title2.bold())
+                            HStack(spacing: 18) {
+                                Image(systemName: "wifi")
+                                Image(systemName: "moon")
+                                Image(systemName: "airplayvideo")
+                            }.font(.title3)
+                        }
+                        .padding(20)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
+                        .overlay(RoundedRectangle(cornerRadius: 22).stroke(colors[tint].opacity(0.8), lineWidth: 1))
+                        .padding(12)
                     }
-                    .padding(32)
-                    .background(isBlack ? Color.black : Color.white.opacity(intensity * 0.12))
-                    .overlay(RoundedRectangle(cornerRadius: 26).stroke(isBlack ? Color.black : colors[tint].opacity(0.8), lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 26))
-                }
-                .frame(height: 270).clipShape(RoundedRectangle(cornerRadius: 26)).padding()
-                Button(isBlack ? "Enable?" : "Disable?") { withAnimation { isBlack.toggle() } }
-                    .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
-                    .background(Color.black, in: RoundedRectangle(cornerRadius: 14))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.25)))
-                    .foregroundStyle(.white).padding(.horizontal)
-                Form {
-                    VStack(alignment: .leading) {
-                        Text("Glass intensity \(Int(intensity * 100))%")
-                        Slider(value: $intensity, in: 0...1)
-                            .tint(Color(red: 0.78, green: 0.72, blue: 1.0))
+                    .frame(height: 190)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Label("Glass intensity", systemImage: "slider.horizontal.3").font(.headline)
+                            Spacer()
+                            Text("\(Int(intensity * 100))%").foregroundStyle(.secondary).monospacedDigit()
+                        }
+                        Slider(value: $intensity, in: 0...1).tint(colors[tint]).controlSize(.large)
+                        HStack {
+                            Text("Subtle")
+                            Spacer()
+                            Text("Strong")
+                        }.font(.caption2).foregroundStyle(.secondary)
                     }
                     .padding(16)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(.white.opacity(0.16), lineWidth: 1))
-                    Picker("Tint", selection: $tint) {
-                        Text("Silver").tag(0)
-                        Text("Violet").tag(1)
-                        Text("Ice Blue").tag(2)
-                        Text("Emerald").tag(3)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.2), lineWidth: 1))
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("GLASS TINT").font(.caption.bold()).tracking(1.4).foregroundStyle(.secondary)
+                        HStack {
+                            ForEach(colors.indices, id: \.self) { index in
+                                Button { tint = index } label: {
+                                    Circle().fill(colors[index]).frame(width: 30, height: 30)
+                                        .overlay(Circle().stroke(.white.opacity(tint == index ? 1 : 0.25), lineWidth: tint == index ? 3 : 1))
+                                        .frame(maxWidth: .infinity)
+                                }.buttonStyle(.plain)
+                            }
+                        }
                     }
-                }.frame(height: 150)
-                Text("Styles apply only inside this app, not across iOS.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .padding(16)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+
+                    Button {
+                        withAnimation { isBlack.toggle() }
+                    } label: {
+                        Label(isBlack ? "Restore Preview" : "Black Preview", systemImage: "circle.lefthalf.filled")
+                            .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }.buttonStyle(.plain)
+
+                    Text("Preview controls apply inside Project Glass only.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 18)
+                .frame(maxWidth: 560).frame(maxWidth: .infinity)
             }
+            .background(Color(red: 0.025, green: 0.025, blue: 0.045).ignoresSafeArea())
             .navigationTitle("Glass Studio")
+            .navigationBarTitleDisplayMode(.inline)
         }
+        .preferredColorScheme(.dark)
     }
 }
 
