@@ -1,0 +1,31 @@
+
+name: ProjectGlass
+
+options:
+  bundleIdPrefix: com.projectglass
+
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    SWIFT_VERSION: "5.0"
+
+targets:
+  ProjectGlass:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: .
+        excludes:
+          - README.md
+          - Package.swift
+          - codemagic.yaml
+          - project.yml
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.projectglass.app
+        PRODUCT_NAME: ProjectGlass
+        INFOPLIST_KEY_CFBundleDisplayName: Project Glass
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGNING_ALLOWED: NO
